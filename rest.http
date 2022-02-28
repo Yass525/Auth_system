@@ -6,7 +6,12 @@ POST http://localhost:3000/auth/login
 
 ###
 POST http://localhost:3000/auth/register
+Content-Type: application/json
 
+{
+    "email":"yassine525@outlook.com",
+    "password": "password"
+}
 
 ###
 POST http://localhost:3000/auth/refresh-token
