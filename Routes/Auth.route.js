@@ -1,22 +1,26 @@
 const express = require('express')
 const router = express.Router()
 const createError = require('http-errors')
+const { authSchema } = require('../helpers/validationSchema')
 const user = require('../Models/User.model')
+const { signAccessToken } = require('../helpers/jwt_helper')
 
 
 router.post('/register', async(req,res,next)=>{
     try {
-        const{email, password} = req.body
-        if(!email || !password) throw createError.BadRequest
-        
-        const exist = await user.findOne({email : email})
-        if(exist) throw createError.Conflict(`${email} is already been registered`)
-    
-        const User = new user({email, password})
-        const savedUser = await User.save()
+       const result = await authSchema.validateAsync(req.body) 
 
-        res.send(savedUser)
+        const exist = await user.findOne({email : result.email})
+        if(exist) 
+            throw createError.Conflict(`${result.email} is already been registered`)
+    
+        const User = new user(result)
+        const savedUser = await User.save()
+        const accessToken = await signAccessToken(savedUser.id)
+
+        res.send({accessToken})
     } catch (error) {
+        if (error.isJoi === true) error.status = 422
         next(error)
     }
    
