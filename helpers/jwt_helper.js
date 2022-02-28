@@ -11,10 +11,14 @@ module.exports  ={
             const options = {
                 expiresIn:'1h',
                 issuer:'Beatzz.com',
-                audience: userId,
+                audience: [userId],
             }
             jwt.sign(payload, secret, options, (err, token) => {
-                 if (err) reject(err)
+                 if (err) {
+                     console.log(err.message)
+                     console.log("token error")
+                     reject(createError.InternalServerError())
+                 }
                 resolve(token)
             })
         })
