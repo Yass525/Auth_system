@@ -1,6 +1,8 @@
 const express = require('express')
 const morgan = require ('morgan')
 const creteError = require ('http-errors')
+const rateLimit = require('express-rate-limit')
+const helmet = require('helmet')
 
 require('dotenv').config()
 require('./helpers/init_mongodb')
@@ -8,8 +10,8 @@ const { verifyAccessToken } = require('./helpers/jwt_helper')
 const { verifyUserRole } = require('./helpers/jwt_helper')
 
 const AuthRoute = require('./Routes/Auth.route')
-const User = require('./Models/User.model')
-const rateLimit = require('express-rate-limit')
+
+
 
 const limiter = rateLimit({
     max:5,
@@ -23,6 +25,8 @@ app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(limiter)
+app.use(helmet.xssFilter());
+app.use(helmet.hsts());
 
 app.get('/', verifyAccessToken, async(req,res,next)=>{
      res.send("basic user")
