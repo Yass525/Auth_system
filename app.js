@@ -5,8 +5,10 @@ const creteError = require ('http-errors')
 require('dotenv').config()
 require('./helpers/init_mongodb')
 const { verifyAccessToken } = require('./helpers/jwt_helper')
+const { verifyUserRole } = require('./helpers/jwt_helper')
 
 const AuthRoute = require('./Routes/Auth.route')
+const User = require('./Models/User.model')
 
 const app = express()
 app.use(morgan('dev'))
@@ -14,13 +16,21 @@ app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 
 
- app.get('/', verifyAccessToken, async(req,res,next)=>{
-     res.send("Hello from express")
- })
+app.get('/', verifyAccessToken, async(req,res,next)=>{
+     res.send("basic user")
+})
 
- app.use('/auth', AuthRoute)
+app.get('/admin', verifyAccessToken, verifyUserRole('ADMIN'), async(req,res,next)=>{
+    res.send("admin user")
+})
 
- app.use(async(req,res,next)=>{
+app.get('/premium', verifyAccessToken, verifyUserRole('PREMIUM_USER'), async(req,res,next)=>{
+    res.send("admin user")
+})
+
+app.use('/auth', AuthRoute)
+
+app.use(async(req,res,next)=>{
     // const error = new Error ("Not found")
     // error.status = 404
     // next(error)

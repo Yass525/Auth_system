@@ -1,7 +1,7 @@
 const createError = require('http-errors')
 const { authSchema } = require('../helpers/validationSchema')
 const user = require('../Models/User.model')
-const { signAccessToken, signRefreshToken, verifyRefreshToken } = require('../helpers/jwt_helper')
+const { signAccessToken, signRefreshToken, verifyRefreshToken, verifyUserRole } = require('../helpers/jwt_helper')
 const bcrypt = require('bcrypt')
 
 module.exports = {
@@ -15,6 +15,7 @@ module.exports = {
         
             const User = new user(result)
             const savedUser = await User.save()
+            console.log(savedUser._id)
             const accessToken = await signAccessToken(savedUser.id)
             const refreshToken = await signRefreshToken(savedUser.id)
     
@@ -31,13 +32,16 @@ module.exports = {
              const result = await authSchema.validateAsync(req.body)
              const User = await user.findOne({ email: result.email})
      
+             console.log(User)
              if (!User) throw createError.NotFound("User not registered")
      
              const isMatch = await User.isValidPassword(result.password)
              if(!isMatch) throw createError.Unauthorized("Username or Password is not valid")
      
-             const accessToken = await signAccessToken(user.id)
-             const refreshToken = await signRefreshToken(user.id)
+             const accessToken = await signAccessToken(User.id)
+             const refreshToken = await signRefreshToken(User.id)
+
+
      
              res.send({accessToken, refreshToken})
         } catch (error) {
